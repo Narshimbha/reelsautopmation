@@ -1,0 +1,425 @@
+# 🚀 AI Live Clipper & Auto Publisher
+
+**Real-Time AI-Powered Live Streaming, Automatic Highlight Detection, Video Clipping & Social Media Publishing**
+
+## 1. Project Overview
+
+AI Live Clipper is a Python-based application that monitors live video streams, detects interesting moments using Google Gemini AI, automatically creates vertical short-form videos, and publishes approved clips to multiple social media platforms.
+
+### Supported Platforms
+
+- YouTube Shorts
+- Instagram Reels
+- Facebook Reels
+- TikTok
+
+### Main Features
+
+- Real-time live stream ingestion using RTMP.
+- AI-powered highlight and viral moment detection.
+- Automatic 30–60 second clip generation.
+- Custom topic-based highlight detection.
+- Dynamic 9:16 video cropping.
+- Automatic subtitles and captions.
+- AI-generated hooks, titles, descriptions, and hashtags.
+- Optional background music removal using Demucs.
+- Automated social media publishing.
+- Publishing status and error tracking.
+- Command-line configuration.
+
+## 2. Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Python 3.11+ | Main application |
+| Google Gemini API | Multimodal AI analysis |
+| google-genai | Gemini SDK |
+| Pydantic | Structured JSON responses |
+| FFmpeg | Video processing |
+| MediaMTX | RTMP stream ingestion |
+| OpenCV | Visual analysis and framing |
+| yt-dlp | Supported video source downloads |
+| Demucs | Background music separation |
+| SQLite | Application database |
+| FastAPI | Optional management API |
+| GitHub Codespaces | Development environment |
+
+## 3. System Architecture
+
+```text
+LIVE STREAM
+    |
+    v
+MediaMTX / RTMP
+    |
+    v
+Python Stream Manager
+    |
+    v
+Rolling Video Buffer
+    |
+    v
+Gemini AI Analysis
+    |
+    v
+Highlight Detection
+    |
+    v
+Structured JSON Output
+    |
+    v
+FFmpeg Processing
+    |
+    +--> 9:16 Cropping
+    +--> Subtitle Generation
+    +--> Audio Processing
+    +--> Hook & Metadata
+    |
+    v
+Publishing Queue
+    |
+    +--> YouTube Shorts
+    +--> Instagram Reels
+    +--> Facebook Reels
+    +--> TikTok
+```
+
+## 4. GitHub Codespaces Setup
+
+### Step 1: Create Repository
+
+Create a new GitHub repository:
+
+`ai-live-clipper`
+
+Open the repository and select:
+
+**Code → Codespaces → Create Codespace**
+
+### Step 2: Install System Dependencies
+
+Run in the Codespaces terminal:
+
+```bash
+sudo apt-get update
+
+sudo apt-get install -y \
+    ffmpeg \
+    git \
+    python3-pip \
+    python3-venv \
+    libgl1 \
+    libglib2.0-0
+```
+
+Check FFmpeg:
+
+```bash
+ffmpeg -version
+```
+
+### Step 3: Create Python Environment
+
+```bash
+python -m venv venv
+
+source venv/bin/activate
+
+pip install --upgrade pip
+```
+
+### Step 4: Install Python Packages
+
+```bash
+pip install \
+    google-genai \
+    pydantic \
+    python-dotenv \
+    ffmpeg-python \
+    opencv-python-headless \
+    yt-dlp \
+    fastapi \
+    uvicorn \
+    python-multipart \
+    requests \
+    APScheduler \
+    demucs
+```
+
+## 5. Environment Configuration
+
+Create a `.env` file:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+
+GEMINI_MODEL=gemini-2.5-flash
+
+YOUTUBE_CLIENT_ID=
+YOUTUBE_CLIENT_SECRET=
+
+META_APP_ID=
+META_APP_SECRET=
+
+TIKTOK_CLIENT_KEY=
+TIKTOK_CLIENT_SECRET=
+
+DATABASE_URL=sqlite:///clips.db
+
+OUTPUT_DIR=output
+TEMP_DIR=temp
+
+CLIP_MIN_DURATION=30
+CLIP_MAX_DURATION=60
+
+VIDEO_WIDTH=1080
+VIDEO_HEIGHT=1920
+
+ENABLE_MUSIC_REMOVAL=false
+AUTO_PUBLISH=false
+```
+
+**Security:** Never commit `.env` to GitHub. Add it to `.gitignore` and use GitHub Codespaces Secrets for sensitive credentials.
+
+## 6. Recommended Project Structure
+
+```text
+ai-live-clipper/
+│
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   │
+│   ├── ingestion/
+│   │   ├── rtmp_receiver.py
+│   │   └── rolling_buffer.py
+│   │
+│   ├── ai/
+│   │   ├── gemini_client.py
+│   │   ├── highlight_detector.py
+│   │   ├── prompts.py
+│   │   └── schemas.py
+│   │
+│   ├── processing/
+│   │   ├── clip_extractor.py
+│   │   ├── crop_engine.py
+│   │   ├── subtitle_generator.py
+│   │   └── audio_processor.py
+│   │
+│   ├── publishing/
+│   │   ├── youtube.py
+│   │   ├── instagram.py
+│   │   ├── facebook.py
+│   │   └── tiktok.py
+│   │
+│   ├── services/
+│   │   ├── metadata.py
+│   │   ├── queue.py
+│   │   └── database.py
+│   │
+│   └── utils/
+│       └── logger.py
+│
+├── output/
+├── temp/
+├── tests/
+│
+├── .env.example
+├── .gitignore
+├── requirements.txt
+├── README.md
+└── main.py
+```
+
+## 7. AI Highlight Detection
+
+Gemini will analyze video segments and identify:
+
+- Funny moments.
+- Important conversations.
+- Unexpected reactions.
+- Gaming highlights.
+- Interesting discussions.
+- Strong opening hooks.
+
+Each detected highlight should return structured JSON:
+
+```json
+{
+  "start": 125,
+  "end": 170,
+  "score": 95,
+  "hook": "You Won't Believe This!",
+  "position": "center",
+  "reason": "Unexpected funny moment",
+  "title": "Crazy Live Stream Moment",
+  "hashtags": [
+    "#shorts",
+    "#gaming",
+    "#viral"
+  ]
+}
+```
+
+Use Pydantic validation before sending the clip to FFmpeg.
+
+## 8. Live Stream Processing
+
+The application should:
+
+1. Receive an incoming RTMP stream.
+2. Maintain a rolling buffer.
+3. Analyze recent video and audio segments.
+4. Identify interesting moments.
+5. Retrieve the required pre-event and post-event footage.
+6. Generate a standalone clip.
+7. Avoid duplicate highlights.
+8. Send completed clips to the publishing queue.
+
+Use configurable analysis intervals to control API costs.
+
+Do not send every frame individually to Gemini.
+
+## 9. Video Output Specifications
+
+| Property | Value |
+|---|---|
+| Aspect Ratio | 9:16 |
+| Resolution | 1080 × 1920 |
+| Format | MP4 |
+| Video Codec | H.264 |
+| Audio Codec | AAC |
+| Pixel Format | yuv420p |
+| Clip Duration | 30–60 seconds |
+| Subtitles | SRT / ASS |
+
+## 10. Automatic Publishing
+
+Each publishing integration must use the platform's official API.
+
+### YouTube
+
+Use YouTube Data API v3 and OAuth 2.0.
+
+### Instagram
+
+Use Instagram Graph API with an eligible Professional account.
+
+### Facebook
+
+Use Facebook Graph API with appropriate Page permissions.
+
+### TikTok
+
+Use TikTok Content Posting API with approved publishing permissions.
+
+Publishing must include:
+
+- OAuth authentication.
+- Video upload.
+- Caption and description.
+- Hashtags.
+- Publishing status.
+- Error handling.
+- Retry management.
+
+Never assume an API call succeeded until the platform confirms publication.
+
+## 11. Development Commands
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the application:
+
+```bash
+python main.py
+```
+
+Start optional FastAPI service:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Example local video test:
+
+```bash
+python main.py --input sample.mp4 --clips 5
+```
+
+Example topic-based processing:
+
+```bash
+python main.py \
+    --input sample.mp4 \
+    --clips 5 \
+    --topic "funny moments"
+```
+
+Example live processing:
+
+```bash
+python main.py \
+    --source rtmp://localhost:1935/live/stream \
+    --clips 5 \
+    --auto-publish
+```
+
+These commands define the intended interface; implement the corresponding argument handlers before using them.
+
+## 12. Testing Requirements
+
+- Test RTMP stream ingestion.
+- Test rolling buffer functionality.
+- Test Gemini video analysis.
+- Validate structured JSON responses.
+- Test timestamp accuracy.
+- Test duplicate clip detection.
+- Test dynamic vertical cropping.
+- Test subtitle synchronization.
+- Test music separation.
+- Test OAuth authentication.
+- Test each social publishing integration.
+- Verify final video output.
+
+## 13. Deployment Notes
+
+GitHub Codespaces is intended for development and testing.
+
+For continuous production live processing, deploy the application to a dedicated server with sufficient CPU, RAM, storage, and network bandwidth.
+
+Recommended production components:
+
+- Linux VPS.
+- MediaMTX.
+- Python application.
+- FFmpeg.
+- Persistent storage.
+- Process supervisor.
+- Secure credential storage.
+
+A persistent server is necessary because Codespaces can stop or shut down when inactive.
+
+## 14. Important Limitations
+
+- Social platform publishing requires account eligibility and API approval.
+- TikTok public publishing may require an app audit.
+- Gemini analysis has usage-based API charges.
+- Copyright compliance must be checked separately.
+- AI-generated highlights are not guaranteed to be viral.
+- Demucs cannot guarantee complete removal of copyrighted music.
+- Real-time processing has unavoidable analysis and publishing latency.
+
+## 15. Project Goal
+
+Build a reliable, modular, cost-efficient AI-powered live clipping platform that automatically transforms live streams into high-quality vertical short videos and distributes them across supported social media platforms.
+
+**Development Priority:** Build and test each module independently before enabling automatic public publishing.
+
+**Project Name:** AI Live Clipper & Auto Publisher
+
+**Developer:** Subhamoy Indusvalley
